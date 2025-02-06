@@ -41,7 +41,12 @@ async function run() {
     const jobApplications = client.db('jobPortal').collection('applications')
 
     app.get('/jobs',async(req,res) => {
-        const result = await jobCollections.find().toArray()
+      const email = req.query.email
+      let query = {}
+      if(email){
+        query={hr_email:email}
+      }
+        const result = await jobCollections.find(query).toArray()
         res.send(result);
     });
 
@@ -66,6 +71,28 @@ async function run() {
       const result = await jobApplications.insertOne(application);
       res.send(result);
     });
+
+    app.get('/job-applications/:id',async(req,res) => {
+      const id = req.params.id 
+      const qurey = {job_id : id}
+      const result = await jobApplications.find(qurey).toArray();
+      res.send(result);
+    })
+
+    app.patch('/setStatus/:id',async(req,res) => {
+      
+      const id = req.params.id 
+      const data = req.body.status
+      const query = {_id: new ObjectId(id)};
+      console.log(query);
+      const updateDoc = {
+        $set:{
+          status:data
+        }
+      }
+      const result = await jobApplications.updateOne(query,updateDoc);
+      res.send(result);
+    })
 
     app.get('/application',async(req,res) => {
       const email = req.query.email;
