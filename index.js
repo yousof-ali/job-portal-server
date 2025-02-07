@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const jwt = require('jsonwebtoken')
 const app = express();
 require('dotenv').config();
 const port = process.env.PORT || 5000;
@@ -39,6 +40,13 @@ async function run() {
 
     const jobCollections = client.db('jobPortal').collection('jobs');
     const jobApplications = client.db('jobPortal').collection('applications')
+
+    // auth related api 
+    app.post('/jwt',async(req,res) => {
+      const user = req.body
+      const token = jwt.sign(user,'secret',{expiresIn:'1h'});
+      res.send(token);
+    })
 
     app.get('/jobs',async(req,res) => {
       const email = req.query.email
