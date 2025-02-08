@@ -9,7 +9,9 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 app.use(cors({
   origin:[
-    'http://localhost:5173'
+    'http://localhost:5173',
+    'https://job-portal-2a260.web.app',
+    'https://job-portal-2a260.firebaseapp.com'
   ],
   credentials:true,
 }));
@@ -57,37 +59,38 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
     const jobCollections = client.db('jobPortal').collection('jobs');
     const jobApplications = client.db('jobPortal').collection('applications')
 
     // auth related api 
-    app.post('/jwt',async(req,res) => {
-      const user = req.body
-      const token = jwt.sign(user,process.env.JWT_SECRET,{expiresIn:'1h'});
-      
+    app.post('/jwt', async (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '5h' });
+    
       res
-      .cookie('token',token,{
-        httpOnly:true,
-        secure:false,
-        sameSite:"strict"
-      })
-      .send({success:true})
-    })
+        .cookie('token', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict'
+        })
+        .send({ success: true });
+    });
+    
 
-    app.post('/logout',async(req,res) => {
+    app.post('/logout', async (req, res) => {
       res
-      .clearCookie('token',{
-        httpOnly:true,
-        secure:false
-      })
-      .send({success:true});
-
-    })
+        .clearCookie('token', {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict'
+        })
+        .send({ success: true });
+    });
 
     // jobCollections api 
 
